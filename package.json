@@ -32,6 +32,9 @@
     "jquery.easing": "^1.4.1",
     "popper.js": "^1.11.1"
   },
+  "scripts": {
+    "start": "node gulpfile.js"
+  },
   "devDependencies": {
     "browser-sync": "2.18.13",
     "gulp": "^3.9.1",
