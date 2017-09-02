@@ -3,6 +3,9 @@
   "name": "startbootstrap-freelancer",
   "version": "4.0.0-beta",
   "description": "A freelancer portfolio HTML theme for Bootstrap.",
+  "scripts": {
+   "start": "node freelancer.js"
+    },
   "keywords": [
     "css",
     "sass",
