@@ -1,1 +1,1 @@
-bot: node js/freelancer.js
+bot: node freelancer.js
