@@ -1,1 +1,1 @@
-worker: node server.js
+bot: node js/freelancer.js
