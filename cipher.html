@@ -25,6 +25,7 @@
 
   <body id="page-top">
 
+
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
       <div class="container">
@@ -65,20 +66,26 @@
         </div>
       </div>
     </header>
-
     <!-- About Section -->
     <section id="about" class="content-section text-center">
       <div class="container">
         <div class="row">
           <div class="col-lg-8 mx-auto">
             <h2>Encryption</h2>
-            <p>Grayscale is a free Bootstrap theme created by Start Bootstrap. It can be yours right now, simply download the template on
-              <a href="http://startbootstrap.com/template-overviews/grayscale/">the preview page</a>. The theme is open source, and you can use it for any purpose, personal or commercial.</p>
-            <p>This theme features stock photos by
-              <a href="http://gratisography.com/">Gratisography</a>
-              along with a custom Google Maps skin courtesy of
-              <a href="http://snazzymaps.com/">Snazzy Maps</a>.</p>
-            <p>Grayscale includes full HTML, CSS, and custom JavaScript files along with SASS and LESS files for easy customization!</p>
+
+            <div class="form-group"> <!-- Email field !-->
+            <p>Enter your message to encrypt with the cipher offset</p>
+              <div class="input-group">
+
+              <input style="width:80%; text-transform:uppercase" class="form-control " placeholder="Hello, Welcome"  id="encrypt" type="text" />
+              <input style="width:15% " class="form-control " id="offset" type="number" />
+            </div>
+            <br>
+              <button id="pressEncrypt" name="pressEncrypt" class="btn btn-default btn-lg">Encrypt</button>
+              <br> <br>
+              <p id="encryptResult">Result</p>
+            
+            
           </div>
         </div>
       </div>
@@ -89,8 +96,16 @@
       <div class="container">
         <div class="col-lg-8 mx-auto">
           <h2>Decryption</h2>
-          <p>You can download Grayscale for free on the preview page at Start Bootstrap.</p>
-          <a href="http://startbootstrap.com/template-overviews/grayscale/" class="btn btn-default btn-lg">Visit Download Page</a>
+            <div class="form-group"> <!-- Email field !-->
+              <p>Enter your message to decrypt</p>
+              <input type="search" style="text-transform:uppercase" class="form-control" id="decrypt" placeholder="Hello, Welcome">
+            </div>
+            
+            <div class="form-group"> <!-- Submit button !-->
+              <button id="pressDecrypt" name="pressDecrypt" class="btn btn-default btn-lg">Decrypt</button>
+            </div>  
+            <p id="decryptResult">Result</p>
+            
         </div>
       </div>
     </section>
@@ -107,17 +122,6 @@
         </div>
       </div>
     </section>
-
-    <!-- Map Section -->
-    <div id="map"></div>
-
-    <!-- Footer -->
-    <footer>
-      <div class="container text-center">
-        <p>Copyright &copy; Your Website 2017</p>
-      </div>
-    </footer>
-
     <!-- Bootstrap core JavaScript -->
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/popper/popper.min.js"></script>
@@ -131,6 +135,93 @@
 
     <!-- Custom scripts for this template -->
     <script src="js/grayscale.min.js"></script>
+    <script>
+      $('#decrypt').on('input',function(e){
+
+    });
+    //https://rosettacode.org/wiki/Levenshtein_distance#JavaScript
+    function editDistance(a, b) {
+    var t = [], u, i, j, m = a.length, n = b.length;
+      if (!m) { return n; }
+      if (!n) { return m; }
+      for (j = 0; j <= n; j++) { t[j] = j; }
+      for (i = 1; i <= m; i++) {
+        for (u = [i], j = 1; j <= n; j++) {
+          u[j] = a[i - 1] === b[j - 1] ? t[j - 1] : Math.min(t[j - 1], t[j], u[j - 1]) + 1;
+        } t = u;
+      } return u[n];
+    }
+    function offsetText(text, offset) {
+      var newString = "";
+      for (i = 0; i < text.length; i++) {
+        var newChar = text.charCodeAt(i);
+        if (newChar!=32){
+          newChar = 0+parseFloat(newChar)+parseFloat(offset)-65;
+          newChar = 0+newChar%26;
+          newString=newString.concat(String.fromCharCode(newChar+65));
+        } else {
+          newString = newString.concat(" ");
+        }
+      }
+      return newString;
+    }
+    $( "#pressEncrypt" ).click(function(e) {
+      var text = document.getElementById('encrypt').value;
+      text = text.toUpperCase();
+      var offset = document.getElementById('offset').value;
+      var newString = offsetText(text,offset);
+      
+      document.getElementById("encryptResult").innerHTML = newString;
+    });
+    function inFunc(a, b) { //a in b, return true
+      for (var j = 0, len = b.length; j < len; j++) {
+        if (a==b[j])
+          return true;
+      }
+      return false;
+    }
+    jQuery.ajaxSetup({async:false});
+    $( "#pressDecrypt" ).click(function(e) {
+      var text1 = document.getElementById('decrypt').value;
+      var bestText = "";
+      var bestSimilarity = 1000;
+      for (var alpha = 0; alpha<26; alpha++){
+        text = text1.toUpperCase();
+        text = offsetText(text,alpha);
+        var a = text.split(" ");
+        jQuery.get('img/10000words.txt', function(data2) {
+            var similarity = 0;
+            var data = [];
+            var buffer = ""
+            for (i = 0; i < data2.length; i++){
+              var c = data2[i];
+              if (c.charCodeAt(0)<65){
+                i++;
+                data.push(buffer);
+                buffer="";
+              } else {
+                buffer = buffer+c;
+              }
+            }
+            for (i = 0; i < a.length; i++) {
+              if (inFunc(a[i],data)==false){
+                var smallestDist = 100;
+                for (var j = 0, len = data.length; j < len; j++) {
+                  smallestDist=Math.min(smallestDist,editDistance(a[i],data[j]));
+                }
+                similarity= similarity +smallestDist;
+              }
+              
+            }
+            if (similarity<bestSimilarity){
+              bestText=text;
+              bestSimilarity=similarity;
+            }
+        });
+    }
+    document.getElementById("decryptResult").innerHTML = bestText;
+    });
+    </script>
 
   </body>
 
